@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { validateBookingForm } from '../../utils/validation';
+import { calculateRentalPrice } from '../../utils/calculateRentalPrice';
+import { formatCurrency } from '../../utils/formatCurrency';
 import { Button } from '../common/Button';
-import { User, Mail, Phone, MapPin, Calendar, CreditCard, LogIn } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, CreditCard, LogIn, Tag } from 'lucide-react';
 
 export const BookingForm = ({ 
   vehicle, 
@@ -34,6 +36,9 @@ export const BookingForm = ({
       setPhone(currentUser.phone || '+91 98765 43210');
     }
   }, [currentUser]);
+
+  const dailyPrice = parseFloat(vehicle?.price_per_day || vehicle?.pricePerDay || 0);
+  const calculation = calculateRentalPrice(dailyPrice, pickupDate, returnDate);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -87,6 +92,8 @@ export const BookingForm = ({
       setSubmitting(false);
     }
   };
+
+  const isAvailable = vehicle?.available === true || vehicle?.available === 1 || vehicle?.available === '1' || vehicle?.available === 'true';
 
   return (
     <form 
@@ -236,20 +243,58 @@ export const BookingForm = ({
         </select>
       </div>
 
+      {/* Live Price Estimation Display */}
+      <div style={{
+        marginTop: '1.25rem',
+        padding: '1.1rem 1.25rem',
+        backgroundColor: 'rgba(59, 130, 246, 0.06)',
+        border: '1.5px solid rgba(59, 130, 246, 0.2)',
+        borderRadius: 'var(--radius-lg, 10px)',
+        boxSizing: 'border-box'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <Tag size={15} color="var(--primary)" /> Price Summary ({calculation.days} {calculation.days === 1 ? 'day' : 'days'})
+          </span>
+          <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 700 }}>
+            {formatCurrency(dailyPrice)} / day
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.35rem' }}>
+          <span>Vehicle Rental Subtotal</span>
+          <span>{formatCurrency(calculation.rentalAmount)}</span>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.6rem', paddingBottom: '0.6rem', borderBottom: '1px dashed var(--border)' }}>
+          <span>Taxes & GST (18%)</span>
+          <span>{formatCurrency(calculation.taxAmount)}</span>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 800 }}>
+          <span style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>Total Price Payable</span>
+          <span style={{ fontSize: '1.3rem', color: 'var(--primary)', fontFamily: 'var(--font-heading)' }}>
+            {formatCurrency(calculation.totalAmount)}
+          </span>
+        </div>
+      </div>
+
       <div style={{ marginTop: '1.5rem' }}>
         <Button 
           type="submit" 
-          variant="primary" 
+          variant={isAvailable ? "primary" : "secondary"} 
           size="lg" 
-          icon={isAuthenticated ? CreditCard : LogIn} 
+          icon={isAvailable ? (isAuthenticated ? CreditCard : LogIn) : null} 
           fullWidth
-          disabled={submitting}
+          disabled={submitting || !isAvailable}
         >
-          {submitting 
-            ? 'Processing Reservation...' 
-            : isAuthenticated 
-              ? 'Confirm Rental Booking Now' 
-              : 'Log In to Confirm Booking'
+          {!isAvailable 
+            ? 'Vehicle Currently Unavailable' 
+            : submitting 
+              ? 'Processing Reservation...' 
+              : isAuthenticated 
+                ? `Confirm & Book Now • ${formatCurrency(calculation.totalAmount)}` 
+                : `Log In to Confirm Booking • ${formatCurrency(calculation.totalAmount)}`
           }
         </Button>
       </div>

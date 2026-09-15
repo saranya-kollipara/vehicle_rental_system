@@ -108,6 +108,9 @@ export const createBooking = async (req, res) => {
       [bookingId, user_id, total_amount, payment_method, payment_status, txnRef]
     );
 
+    // Update vehicle status in database to unavailable (0)
+    await query(`UPDATE vehicles SET available = 0 WHERE id = ?`, [vehicle_id]);
+
     newBooking.transaction_reference = txnRef;
 
     return res.status(201).json({
@@ -283,6 +286,11 @@ export const cancelBooking = async (req, res) => {
 
     // Set booking_status to 'Cancelled' while preserving current payment_status (Admin must manually approve refunds)
     const updated = await bookingModel.updateStatus(id, 'Cancelled');
+
+    // Restore vehicle availability in database if no other active bookings remain
+    if (booking.vehicle_id) {
+      await query(`UPDATE vehicles SET available = 1 WHERE id = ?`, [booking.vehicle_id]);
+    }
 
     return res.status(200).json({
       success: true,

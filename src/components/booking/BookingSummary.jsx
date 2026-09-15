@@ -1,7 +1,7 @@
 import React from 'react';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { calculateRentalPrice } from '../../utils/calculateRentalPrice';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin, ShieldCheck, Tag } from 'lucide-react';
 import '../../styles/booking.css';
 
 export const BookingSummary = ({ vehicle, pickupDate, returnDate, pickupLocation }) => {
@@ -16,9 +16,14 @@ export const BookingSummary = ({ vehicle, pickupDate, returnDate, pickupLocation
 
   return (
     <div className="booking-summary-card">
-      <h3 style={{ fontSize: '1.15rem', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border)' }}>
-        Booking Price Breakdown
-      </h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border)' }}>
+        <h3 style={{ fontSize: '1.15rem', margin: 0 }}>
+          Booking Price Breakdown
+        </h3>
+        <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem' }}>
+          <ShieldCheck size={12} /> Guaranteed Price
+        </span>
+      </div>
 
       {/* Vehicle Info */}
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.25rem' }}>
@@ -59,9 +64,14 @@ export const BookingSummary = ({ vehicle, pickupDate, returnDate, pickupLocation
         <span>{formatCurrency(calculation.taxAmount)}</span>
       </div>
 
-      <div className="price-breakdown-row total">
-        <span>Total Payable Amount</span>
-        <span style={{ color: 'var(--primary)' }}>{formatCurrency(calculation.totalAmount)}</span>
+      <div className="price-breakdown-row total" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <span>Total Payable Amount</span>
+          <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-muted)' }}>Incl. all taxes & insurance</span>
+        </div>
+        <span style={{ color: 'var(--primary)', fontSize: '1.3rem', fontFamily: 'var(--font-heading)' }}>
+          {formatCurrency(calculation.totalAmount)}
+        </span>
       </div>
     </div>
   );
