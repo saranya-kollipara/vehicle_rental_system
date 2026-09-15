@@ -1,0 +1,38 @@
+.booking-container {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.booking-summary-card {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.price-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+}
+
+.price-breakdown-row.total {
+  border-top: 1.5px dashed var(--border);
+  margin-top: 0.75rem;
+  padding-top: 0.85rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+@media (max-width: 992px) {
+  .booking-container {
+    grid-template-columns: 1fr;
+  }
+}
